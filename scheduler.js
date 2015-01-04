@@ -4,8 +4,15 @@ var exec = require('child_process').exec,
 var app = express()
 
 PATH_SYSFS="/sys/block/"
+function getScheduler()
+{
 
-function getDiskParams(disk,paramNames,callback)
+}
+function getNestedParams()
+{
+
+}
+function getDiskParamsValues(disk,paramNames,callback)
 {
 	path = PATH_SYSFS+disk.name+"/queue"
 	params = []
@@ -13,43 +20,42 @@ function getDiskParams(disk,paramNames,callback)
 	{
 		exec('cat '+path+'/'+paramName,function(err,stdout,stderr) {
       if(stdout!=null) {
-      param = {}
-			param[paramName] = stdout.replace(/\s/g, '')
-			params.push(param)
-			if(params.length == paramNames.length)
-				callback(params)
-      }})
+            param = {}
+			      param[paramName] = stdout.replace(/\s/g, '')
+			      params.push(param)
+        }
+			  if(params.length == paramNames.length) callback(params)
+      })
 	})
 }
-function getDeviceDetails(devices,diskName,callback)
+function getDiskParamsNames(name,callback)
 {
-	path = PATH_SYSFS+diskName+"/queue/"
+	path = PATH_SYSFS+name+"/queue/"
 	exec('find '+path+' -type f -printf "%P "',function(err,stdout,stderr)
 	{
-		disk = { "name":diskName,"params":[] }
-		listOfTunables = stdout.split(' ')
-
-			getDiskParams(disk,listOfTunables,function(params) {
+		disk = { "name":name,"params":[] }
+		paramsNames = stdout.split(' ')
+    getDiskParamsValues(disk,paramsNames,function(params) {
 				console.log("calling cb for adding disk ")
 				disk.params = params
-				callback(disk)
-			})
+        callback(disk)
+		})
 	})
 
 }
-function getDevices(param,callback)
+function getDisksNames(cmd,callback)
 {
-    devices = []
+  disks = []
 
-    exec(param,function (error, stdout, stderr) {
-	disks = stdout.split('\n')
-	for(i=0;i<disks.length;i++)
+  exec(cmd,function (error, stdout, stderr) {
+	disksInOs = stdout.split('\n')
+	for(i=0;i<disksInOs.length;i++)
 	{
-		if(disks[i]!='')
+		if(disksInOs[i]!='')
 		{
-			getDeviceDetails(devices,disks[i],function(disk) {
-			devices.push(disk)
-   			callback(JSON.stringify(devices,null,2))
+			getDiskParamsNames(disksInOs[i],function(disk) {
+			  disks.push(disk)
+   			callback(JSON.stringify(disks,null,2))
 			 })
 		}
 	}
@@ -58,19 +64,21 @@ function getDevices(param,callback)
     }
 })
 }
-app.get('/devices', function (req, res) {
-  getDevices("lsblk -l -o TYPE,NAME | awk '/disk/  { print $2 }'",function(output){
+app.get('/disks', function (req, res) {
+  getDisksNames("lsblk -l -o TYPE,NAME | awk '/disk/  { print $2 }'",function(output){
     res.send(output)
   })
 })
-app.get('/devices/:id', function (req, res) {
-  getDeviceDetails(null,req.params.id,function(output){
+app.get('/disks/:id', function (req, res) {
+  getDiskParamsNames(req.params.id,function(output){
     res.send(output.params)
   })
 })
-app.get('/devices/:id/:param', function (req, res) {
-  getDiskParams({"name":req.params.id},req.params.param,function(output){
-    res.send(output.params)
+app.get('/disks/:id/:param', function (req, res) {
+  params = []
+  params.push(req.params.param)
+  getDiskParamsValues({"name":req.params.id},params,function(output){
+    res.send(output)
   })
 })
 var server = app.listen(8888, function () {
