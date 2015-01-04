@@ -3,30 +3,33 @@ var exec = require('child_process').exec,
     child;
 var app = express()
 
-function getDiskParamValue(path,paramName,callback)
+PATH_SYSFS="/sys/block/"
+
+function getDiskParams(disk,paramNames,callback)
 {
-        }
-function getDiskParams(disk,path,paramNames,callback)
-{
+	path = PATH_SYSFS+disk.name+"/queue"
 	params = []
 	paramNames.forEach(function(paramName)
 	{
 		exec('cat '+path+'/'+paramName,function(err,stdout,stderr) {
-			param = { "id":paramName,"value":stdout}
+      if(stdout!=null) {
+      param = {}
+			param[paramName] = stdout.replace(/\s/g, '')
 			params.push(param)
 			if(params.length == paramNames.length)
 				callback(params)
-                })
+      }})
 	})
-} 
+}
 function getDeviceDetails(devices,diskName,callback)
 {
-	PATH_SYSFS="/sys/block/"+diskName+"/queue"
-	exec('find '+PATH_SYSFS+' -type f -printf "%P "',function(err,stdout,stderr)
+	path = PATH_SYSFS+diskName+"/queue/"
+	exec('find '+path+' -type f -printf "%P "',function(err,stdout,stderr)
 	{
 		disk = { "name":diskName,"params":[] }
-		listOfTunables = stdout.split(' ')	
-			getDiskParams(disk,PATH_SYSFS,listOfTunables,function(params) {
+		listOfTunables = stdout.split(' ')
+
+			getDiskParams(disk,listOfTunables,function(params) {
 				console.log("calling cb for adding disk ")
 				disk.params = params
 				callback(disk)
@@ -35,7 +38,7 @@ function getDeviceDetails(devices,diskName,callback)
 
 }
 function getDevices(param,callback)
-{ 
+{
     devices = []
 
     exec(param,function (error, stdout, stderr) {
@@ -45,12 +48,11 @@ function getDevices(param,callback)
 		if(disks[i]!='')
 		{
 			getDeviceDetails(devices,disks[i],function(disk) {
-			console.log(disk)
 			devices.push(disk)
-   			callback(devices)
+   			callback(JSON.stringify(devices,null,2))
 			 })
 		}
-	}	
+	}
     if (error !== null) {
       console.log('exec error: ' + error);
     }
@@ -61,7 +63,16 @@ app.get('/devices', function (req, res) {
     res.send(output)
   })
 })
-
+app.get('/devices/:id', function (req, res) {
+  getDeviceDetails(null,req.params.id,function(output){
+    res.send(output.params)
+  })
+})
+app.get('/devices/:id/:param', function (req, res) {
+  getDiskParams({"name":req.params.id},req.params.param,function(output){
+    res.send(output.params)
+  })
+})
 var server = app.listen(8888, function () {
 
   var host = server.address().address
@@ -70,4 +81,3 @@ var server = app.listen(8888, function () {
   console.log('Example app listening at http://%s:%s', host, port)
 
 })
-
