@@ -6,29 +6,28 @@ var app = express()
 PATH_SYSFS = "/sys/block/"
 
 
-function getDiskParamsValues(disk, paramNames, callback) {
+function getDiskParamsValues(disk, paramsNames, callback) {
   path = PATH_SYSFS + disk.name + "/queue"
   params = []
-  paramNames.forEach(function(paramName) {
+  paramsNames.forEach(function(paramName) {
     exec('cat ' + path + '/' + paramName, function(err, stdout, stderr) {
-      if (stdout != null) {
-        param = {}
-        param[paramName] = stdout.replace(/\s/g, '')
-        params.push(param)
-      }
-      if (params.length == paramNames.length) callback(params)
+      if (paramName=="" || stdout=="") console.log("One of us is NULL. \nparamName : "+paramName+" stdout : "+stdout)
+      param = {}
+      param[paramName] = stdout.replace(/\s/g, '')
+      params.push(param)
+      if(params.length == paramsNames.length) callback(params)
       })
     })
   }
 
   function getDiskParamsNames(name, callback) {
     path = PATH_SYSFS + name + "/queue/"
-    exec('find ' + path + ' -type f -printf "%P "', function(err, stdout, stderr) {
+    exec('find ' + path + ' -type f -printf "%P\\n"', function(err, stdout, stderr) {
       disk = {
         "name": name,
         "params": []
       }
-      paramsNames = stdout.split(' ')
+      paramsNames = stdout.split('\n')
       getDiskParamsValues(disk, paramsNames, function(params) {
         console.log("calling cb for adding disk ")
         disk.params = params
@@ -67,11 +66,9 @@ function getDiskParamsValues(disk, paramNames, callback) {
     })
   })
   app.get('/disks/:id/:param', function(req, res) {
-    params = []
-    params.push(req.params.param)
-    getDiskParamsValues({
-      "name": req.params.id
-    }, params, function(output) {
+    param = []
+    param.push(req.params.param)
+    getDiskParamsValues({"name": req.params.id}, param, function(output) {
       res.send(output)
     })
   })
