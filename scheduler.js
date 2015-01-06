@@ -15,9 +15,9 @@ PATH_SYSFS = "/sys/block/"
 function setScheduler(disk,scheduler,callback)
 {
   exec('echo '+scheduler+' > /sys/block/'+disk+'/queue/scheduler', function(err, stdout, stderr) {
-    if(stderr!=null) callback(stderr)
-    callback("Scheduler changed to "+scheduler)
-    })
+    if(!stderr) callback("Scheduler changed to "+scheduler)
+    else callback(stderr)
+   })
 }
 function getDiskParamsValues(disk, paramsNames, callback) {
   path = PATH_SYSFS + disk.name + "/queue"
@@ -26,7 +26,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
     exec('cat ' + path + '/' + paramName, function(err, stdout, stderr) {
       if (paramName==null || stdout==null) { callback(params) }
       else {
-        stdou = stdout.replace(/\s/g, '')
+        stdout = stdout.replace(/\s/g, '')
         if(paramName == "scheduler"){
           pattern = /\[\w*\]/
           params[paramName] = pattern.exec(stdout)[0]
