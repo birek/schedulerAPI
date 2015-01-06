@@ -30,7 +30,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
         if(paramName == "scheduler"){
           pattern = /\[\w*\]/
           params[paramName] = pattern.exec(stdout)[0]
-          console.log(pattern.exec(stdout))
+          //console.log(pattern.exec(stdout))
         }
         else if(paramName.split('/').length > 1)
         {
@@ -57,7 +57,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
       paramsNames = stdout.split('\n')
       paramsNames.push(null)
       getDiskParamsValues(disk, paramsNames, function(params) {
-        console.log("calling cb for adding disk ")
+        //console.log("calling cb for adding disk ")
         disk.params = params
         callback(disk)
       })
@@ -79,7 +79,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
         }
       }
       if (error !== null) {
-        console.log('exec error: ' + error);
+        //console.log('exec error: ' + error);
       }
     })
   }
@@ -104,7 +104,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
   })
   app.put('/disks/:id/:param/:value', function (req, res) {
   //  res.send('Got a PUT request at /disk/'+req.params.id+' for setting '+req.params.param + ' to '+req.params.value);
-   setScheduler(req.params.id,req.param.value,function(output)
+   setScheduler(req.params.id,req.params.value,function(output)
    {
      res.send(output)
    })
@@ -118,6 +118,6 @@ function getDiskParamsValues(disk, paramsNames, callback) {
     var host = server.address().address
     var port = server.address().port
 
-    console.log('Example app listening at http://%s:%s', host, port)
+    console.log('Scheduler API is available at http://%s:%s', host, port)
 
   })
