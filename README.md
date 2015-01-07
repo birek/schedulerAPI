@@ -1,4 +1,5 @@
 wget http://nodejs.org/dist/v0.10.35/node-v0.10.35-linux-x64.tar.gz
+
 tar -zxvf node-v0.10.35-linux-x64.tar.gz -C /opt
 
 export PATH=$PATH:/opt/node-v0.10.35-linux-x64/bin/
@@ -25,5 +26,5 @@ http://YOUR_IP:8888/disks/sda/scheduler/
 curl -X PUT http://localhost:8080/disks/sda/scheduler/noop
 
 
-You can use firefox plugin for REST tests
+You can use firefox plugin for making HTTP request and verifing response
 https://addons.mozilla.org/pl/firefox/addon/httprequester/
