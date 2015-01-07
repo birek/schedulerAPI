@@ -1,3 +1,13 @@
+#How does it works?
+
+it uses "lsblk" command to determine disks in system
+
+it prints content of files in /sys/block/$disk/queue
+
+for scheduler change it echoes given value to /sys/block/$disk/queue/scheduler
+
+#How set env
+
 wget http://nodejs.org/dist/v0.10.35/node-v0.10.35-linux-x64.tar.gz
 
 tar -zxvf node-v0.10.35-linux-x64.tar.gz -C /opt
