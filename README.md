@@ -1,4 +1,4 @@
-#How does it works\?
+#How does it work?
 
 it uses "lsblk" command to determine disks in system
 
