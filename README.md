@@ -1,4 +1,4 @@
-#How does it works?
+#How does it works\?
 
 it uses "lsblk" command to determine disks in system
 
@@ -25,19 +25,19 @@ sudo node scheduler.js
 
 1. List all disks and params
 
-http://YOUR_IP:8888/disks/
+  http://YOUR_IP:8888/disks/
 
 2. Check params of sda drive
 
-http://YOUR_IP:8888/disks/sda/
+  http://YOUR_IP:8888/disks/sda/
 
 3. Check scheduler for sda drive
 
-http://YOUR_IP:8888/disks/sda/scheduler/
+  http://YOUR_IP:8888/disks/sda/scheduler/
 
 4. Set "noop" scheduler for sda drive
 
-curl -X PUT http://localhost:8080/disks/sda/scheduler/noop
+  curl -X PUT http://localhost:8080/disks/sda/scheduler/noop
 
 
 You can use firefox plugin for making HTTP request and verifing response
