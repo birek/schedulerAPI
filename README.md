@@ -14,15 +14,19 @@ sudo node scheduler.js
 #Examples
 
 1. List all disks and params
+
 http://YOUR_IP:8888/disks/
 
 2. Check params of sda drive
+
 http://YOUR_IP:8888/disks/sda/
 
 3. Check scheduler for sda drive
+
 http://YOUR_IP:8888/disks/sda/scheduler/
 
 4. Set "noop" scheduler for sda drive
+
 curl -X PUT http://localhost:8080/disks/sda/scheduler/noop
 
 
