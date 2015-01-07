@@ -19,6 +19,19 @@ function setScheduler(disk,scheduler,callback)
     else callback(stderr)
    })
 }
+function getSchedulers(content,callback)
+{
+  schedulers = []
+  content.trim().split(" ").forEach(function(s)
+  {
+    scheduler = {}
+    if(s.search(/\[/) >= 0 ) { scheduler.name = s; scheduler.status='active' }
+    else { scheduler.name=s; scheduler.status='non-active' }
+    schedulers.push(scheduler)
+  })
+  callback(schedulers)
+
+}
 function getDiskParamsValues(disk, paramsNames, callback) {
   path = PATH_SYSFS + disk.name + "/queue"
   params = {}
@@ -26,22 +39,18 @@ function getDiskParamsValues(disk, paramsNames, callback) {
     exec('cat ' + path + '/' + paramName, function(err, stdout, stderr) {
       if (paramName==null || stdout==null) { callback(params) }
       else {
-        stdout = stdout.replace(/\s/g, '')
         if(paramName == "scheduler"){
-          pattern = /\[\w*\]/
-          params[paramName] = pattern.exec(stdout)[0]
-          //console.log(pattern.exec(stdout))
+          getSchedulers(stdout,function(schedulers) {
+            params.schedulers = schedulers
+          })
         }
-        else if(paramName.split('/').length > 1)
+        else
         {
-          nestedParamsGroup = paramName.split('/')
-          nestedParamName = nestedParamsGroup[1]
-          param = {}
-          param[nestedParamName] = stdout
-          if(!params[nestedParamsGroup[0]]) params[nestedParamsGroup[0]] = []
-          params[nestedParamsGroup[0]].push(param)
+          stdout = stdout.replace(/\s/g, '')
+          iosched = paramName.split('/')
+          ioschedName = iosched[1]
+          params[ioschedName] = stdout
         }
-        else  params[paramName] = stdout
       }
       })
     })
@@ -49,7 +58,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
 
   function getDiskParamsNames(name, callback) {
     path = PATH_SYSFS + name + "/queue/"
-    exec('find ' + path + ' -type f -printf "%P\\n"', function(err, stdout, stderr) {
+    exec('find ' + path + ' -type f -regex \'.*scheduler\\|.*\/iosched.*\' -printf "%P\\n"', function(err, stdout, stderr) {
       disk = {
         "name": name,
         "params" : null
@@ -57,7 +66,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
       paramsNames = stdout.split('\n')
       paramsNames.push(null)
       getDiskParamsValues(disk, paramsNames, function(params) {
-        //console.log("calling cb for adding disk ")
+
         disk.params = params
         callback(disk)
       })
@@ -79,7 +88,7 @@ function getDiskParamsValues(disk, paramsNames, callback) {
         }
       }
       if (error !== null) {
-        //console.log('exec error: ' + error);
+        console.log('exec error: ' + error);
       }
     })
   }
@@ -94,25 +103,21 @@ function getDiskParamsValues(disk, paramsNames, callback) {
       res.send(output.params)
     })
   })
-  app.get('/disks/:id/:param', function(req, res) {
+  app.get('/disks/:id/schedulers', function(req, res) {
     param = []
-    param.push(req.params.param)
+    param.push("scheduler")
     param.push(null)
     getDiskParamsValues({"name": req.params.id}, param, function(output) {
       res.send(output)
     })
   })
   app.put('/disks/:id/:param/:value', function (req, res) {
-  //  res.send('Got a PUT request at /disk/'+req.params.id+' for setting '+req.params.param + ' to '+req.params.value);
    setScheduler(req.params.id,req.params.value,function(output)
    {
      res.send(output)
    })
   })
-/*  app.put('/disks/:id',urlencodedParser,function(res,req){
-    if (!req.body) return res.sendStatus(400)
-      res.send('welcome, ' + req.body)
-  })*/
+
   var server = app.listen(8888, function() {
 
     var host = server.address().address

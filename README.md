@@ -23,6 +23,10 @@ sudo node scheduler.js
 
 #Examples
 
+PUT uses singular (scheduler)
+
+GET uses plural (schedulers)
+
 1. List all disks and params
 
   http://YOUR_IP:8888/disks/
@@ -31,11 +35,11 @@ sudo node scheduler.js
 
   http://YOUR_IP:8888/disks/sda/
 
-3. Check scheduler for sda drive
+3. Check ALL available schedulers for sda drive
 
-  http://YOUR_IP:8888/disks/sda/scheduler/
+  http://YOUR_IP:8888/disks/sda/schedulers/
 
-4. Set "noop" scheduler for sda drive
+4. Set "noop" scheduler for sda drive. Do notice that request use singular form "scheduler" not "schedulers"
 
   curl -X PUT http://localhost:8080/disks/sda/scheduler/noop
 
