@@ -35,14 +35,46 @@ GET uses plural (schedulers)
 
   http://YOUR_IP:8888/disks/sda/
 
+  OUTPUT:
+  {
+    "fifo_batch": "16",
+    "front_merges": "1",
+    "writes_starved": "2",
+    "write_expire": "5000",
+    "read_expire": "500",
+    "schedulers": [
+    {
+      "name": "noop",
+      "status": "non-active"
+      },
+      {
+        "name": "anticipatory",
+        "status": "non-active"
+        },
+        {
+          "name": "[deadline]",
+          "status": "active"
+          },
+          {
+            "name": "cfq",
+            "status": "non-active"
+          }
+          ],
+          "undefined": ""
+  }
+
 3. Check ALL available schedulers for sda drive
 
   http://YOUR_IP:8888/disks/sda/schedulers/
 
 4. Set "noop" scheduler for sda drive. Do notice that request use singular form "scheduler" not "schedulers"
 
-  curl -X PUT http://localhost:8080/disks/sda/scheduler/noop
+  curl -X PUT http://localhost:8888/disks/sda/scheduler/noop
 
+  [maciek@localhost ~]$ curl -X PUT http://localhost:8888/disks/sda/scheduler/noop
+  Scheduler changed to noop
+  [maciek@localhost ~]$ cat /sys/block/sda/queue/scheduler
+  [noop] anticipatory deadline cfq
 
 You can use firefox plugin for making HTTP request and verifing response
 https://addons.mozilla.org/pl/firefox/addon/httprequester/
